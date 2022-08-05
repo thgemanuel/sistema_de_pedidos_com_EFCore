@@ -21,5 +21,7 @@ namespace SistemaPedidoEFCore.Domain
         public string CEP{ get; set; }
         public string Estado{ get; set; }
         public string Cidade{ get; set; }
+        //criando nova propriedade email para rollback de migracoes
+        public string Email{ get; set; }
     }
 }
