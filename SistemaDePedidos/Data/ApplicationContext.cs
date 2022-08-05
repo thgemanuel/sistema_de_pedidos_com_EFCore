@@ -18,10 +18,15 @@ namespace SistemaPedidoEFCore.Data
         public DbSet<Cliente> Clientes { get; set; }
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
+            //o metodo EnableRetryOnFailure deixa a aplicacao mais resiliente em caso de falha na conexao
             optionsBuilder
                 .UseLoggerFactory(_logger)
                 .EnableSensitiveDataLogging() // exibe os valores de cada parametro no console
-                .UseSqlServer("Data source=(localdb)\\mssqllocaldb;Initial Catalog=SistemaDePedidosEFCoreConsole;Integrated Security=true");
+                .UseSqlServer("Data source=(localdb)\\mssqllocaldb;Initial Catalog=SistemaDePedidosEFCoreConsole;Integrated Security=true",
+                p=>p.EnableRetryOnFailure(maxRetryCount: 2, //numero maximo de tentativas
+                                        maxRetryDelay: TimeSpan.FromSeconds(5), //intervalo de tempo entre tentativas
+                                        errorNumbersToAdd: null) //codigos de erros adicionas que o EFCore interprete a mais
+                                        ); //habilitando funcionalidade de Retry em caso de falha de conexao, sem argumentos ele tenta se conectar 6x até completar um minuto
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
