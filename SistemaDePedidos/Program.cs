@@ -27,7 +27,13 @@ namespace SistemaDePedidosEFCoreConsole
             //InserirDadosEmMassa();
 
             //consultar dados
-            ConsultarDados();
+            // ConsultarDados();
+
+            //cadastrando pedido na base de dados
+            // CadastrarPedido();
+
+            //metodo consulta carregamento adiantado
+            ConsultarPedidoCarregamentoAdiantado();
         }
 
         //inserindo dados em massa
@@ -150,6 +156,48 @@ namespace SistemaDePedidosEFCoreConsole
                 //retorna a primeira instancia encontrada no BD que satisfaz a condicao 
                 db.Clientes.FirstOrDefault(p=>p.Id==cliente.Id);
             }
+        }
+        //carregamento adiantado
+        private static void CadastrarPedido()
+        {
+            using var db = new SistemaPedidoEFCore.Data.ApplicationContext();
+
+            var cliente = db.Clientes.FirstOrDefault();
+            var produto = db.Clientes.FirstOrDefault();
+
+            var pedido = new Pedido{
+                ClienteID = cliente.Id,
+                IniciadoEm = DateTime.Now,
+                FinalizadoEm = DateTime.Now,
+                Observacao = "Pedido Teste",
+                Status = SistemaPedidoEFCore.ValueObjects.StatusPedido.Analise,
+                TipoFrete = SistemaPedidoEFCore.ValueObjects.TipoFrete.SemFrete,
+                Itens = new List<PedidoItem>
+                {
+                    new PedidoItem
+                    {
+                        ProdutoID = produto.Id,
+                        Desconto = 0,
+                        Quantidade = 1,
+                        Valor = 10,
+                    }
+                }
+            };
+
+            db.Pedidos.Add(pedido);
+            db.SaveChanges();
+        }
+
+        private static void ConsultarPedidoCarregamentoAdiantado(){
+            using var db = new SistemaPedidoEFCore.Data.ApplicationContext();
+            
+            //o metodo Include faz o carregamento adiantado, nele é informado a propriedade de navegacao que o EFCore ira carregar automaticamente
+            var pedidos = db.Pedidos
+                .Include(p=>p.Itens)
+                .ThenInclude(p=>p.Produto) //include do que estado no metodo Include, ou seja é o segundo nivel do Include
+                .ToList();
+
+            Console.WriteLine(pedidos.Count);
         }
     }
 }
