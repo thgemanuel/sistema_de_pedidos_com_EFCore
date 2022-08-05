@@ -10,6 +10,8 @@ namespace SistemaPedidoEFCore.Data
         //é possivel criar o modelo de dados a partir do DbSet<> quanto
         //  sobreescrevendo a funcao OnModelCreating
         public DbSet<Pedido> Pedidos { get; set; }
+        public DbSet<Produto> Produtos { get; set; }
+        public DbSet<Cliente> Clientes { get; set; }
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             optionsBuilder.UseSqlServer("Data source=(localdb)\\mssqllocaldb;Initial Catalog=SistemaDePedidosEFCoreConsole;Integrated Security=true");
