@@ -24,7 +24,10 @@ namespace SistemaDePedidosEFCoreConsole
             //InserirDados();
 
             //chama funcao para inserir dados em massa
-            InserirDadosEmMassa();
+            //InserirDadosEmMassa();
+
+            //consultar dados
+            ConsultarDados();
         }
 
         //inserindo dados em massa
@@ -116,6 +119,37 @@ namespace SistemaDePedidosEFCoreConsole
             var registros = db.SaveChanges();
 
             Console.WriteLine($"Total registro(s): {registros}");
+        }
+
+        //consulta no BD
+        private static void ConsultarDados()
+        {
+            using var db = new SistemaPedidoEFCore.Data.ApplicationContext();
+            //consulta por sintaxe
+            //var consultaPorSintaxe = (from c in db.Clientes where c.Id>0 select c).ToList();
+            
+            //consulta por metodo em memoria a partir do rastreamento
+            var consultaPorMetodo = db.Clientes
+            .Where(p => p.Id > 0)
+            .OrderBy(p => p.Id)  //ordenando a consulta
+            .ToList();
+            
+            //consulta por metodo forcando acesso ao BD com AsNoTracking(), nao criando copia em memoria e nao fazendo rastreamento
+            //var consultaPorMetodo = db.Clientes.AsNoTracking().Where(p => p.Id > 0).ToList();
+            foreach (var cliente in consultaPorMetodo)
+            {
+                //escrevendo o cliente que esta sendo consultado
+                Console.Write($"Consultando Cliente: {cliente.Id}");
+
+
+                //executando consulta primeiro os objetos em memoria e se n encontrar, executa a consulta na BD
+                //essa consulta é feita na chave primaria da entidade
+                //apenas o metodo Find faz a consulta primeiramente na memoria para depois no BD, os demais somente consultam BD
+                //db.Clientes.Find(cliente.Id);
+
+                //retorna a primeira instancia encontrada no BD que satisfaz a condicao 
+                db.Clientes.FirstOrDefault(p=>p.Id==cliente.Id);
+            }
         }
     }
 }
