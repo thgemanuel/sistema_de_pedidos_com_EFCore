@@ -26,6 +26,7 @@ namespace SistemaPedidoEFCore.Data
                 p=>p.EnableRetryOnFailure(maxRetryCount: 2, //numero maximo de tentativas
                                         maxRetryDelay: TimeSpan.FromSeconds(5), //intervalo de tempo entre tentativas
                                         errorNumbersToAdd: null) //codigos de erros adicionas que o EFCore interprete a mais
+                                        .MigrationsHistoryTable("cursoEFCore")//alterando o nome da tabela de migrações gerada, nao criando mais a tabela EFMigrationHistory, usando o nome da tablea informada
                                         ); //habilitando funcionalidade de Retry em caso de falha de conexao, sem argumentos ele tenta se conectar 6x até completar um minuto
         }
 
