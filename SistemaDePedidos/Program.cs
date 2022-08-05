@@ -33,7 +33,10 @@ namespace SistemaDePedidosEFCoreConsole
             // CadastrarPedido();
 
             //metodo consulta carregamento adiantado
-            ConsultarPedidoCarregamentoAdiantado();
+            // ConsultarPedidoCarregamentoAdiantado();
+
+            //metodo para atualizar dados
+            AtualizarDados();
         }
 
         //inserindo dados em massa
@@ -133,13 +136,13 @@ namespace SistemaDePedidosEFCoreConsole
             using var db = new SistemaPedidoEFCore.Data.ApplicationContext();
             //consulta por sintaxe
             //var consultaPorSintaxe = (from c in db.Clientes where c.Id>0 select c).ToList();
-            
+
             //consulta por metodo em memoria a partir do rastreamento
             var consultaPorMetodo = db.Clientes
             .Where(p => p.Id > 0)
             .OrderBy(p => p.Id)  //ordenando a consulta
             .ToList();
-            
+
             //consulta por metodo forcando acesso ao BD com AsNoTracking(), nao criando copia em memoria e nao fazendo rastreamento
             //var consultaPorMetodo = db.Clientes.AsNoTracking().Where(p => p.Id > 0).ToList();
             foreach (var cliente in consultaPorMetodo)
@@ -154,7 +157,7 @@ namespace SistemaDePedidosEFCoreConsole
                 //db.Clientes.Find(cliente.Id);
 
                 //retorna a primeira instancia encontrada no BD que satisfaz a condicao 
-                db.Clientes.FirstOrDefault(p=>p.Id==cliente.Id);
+                db.Clientes.FirstOrDefault(p => p.Id == cliente.Id);
             }
         }
         //carregamento adiantado
@@ -165,7 +168,8 @@ namespace SistemaDePedidosEFCoreConsole
             var cliente = db.Clientes.FirstOrDefault();
             var produto = db.Clientes.FirstOrDefault();
 
-            var pedido = new Pedido{
+            var pedido = new Pedido
+            {
                 ClienteID = cliente.Id,
                 IniciadoEm = DateTime.Now,
                 FinalizadoEm = DateTime.Now,
@@ -188,16 +192,72 @@ namespace SistemaDePedidosEFCoreConsole
             db.SaveChanges();
         }
 
-        private static void ConsultarPedidoCarregamentoAdiantado(){
+        private static void ConsultarPedidoCarregamentoAdiantado()
+        {
             using var db = new SistemaPedidoEFCore.Data.ApplicationContext();
-            
+
             //o metodo Include faz o carregamento adiantado, nele é informado a propriedade de navegacao que o EFCore ira carregar automaticamente
             var pedidos = db.Pedidos
-                .Include(p=>p.Itens)
-                .ThenInclude(p=>p.Produto) //include do que estado no metodo Include, ou seja é o segundo nivel do Include
+                .Include(p => p.Itens)
+                .ThenInclude(p => p.Produto) //include do que estado no metodo Include, ou seja é o segundo nivel do Include
                 .ToList();
 
             Console.WriteLine(pedidos.Count);
+        }
+
+
+        //atualizar registros
+        private static void AtualizarDados()
+        {
+            using var db = new SistemaPedidoEFCore.Data.ApplicationContext();
+
+            //consultando o cliente com id == 1
+            var cliente = db.Clientes.Find(1);
+
+            cliente.Nome = "Cliente alterado passo 1";
+
+            //atualizando a entidade, porem essa abordagem nao é muito boa pois atualiza todos os campus da entidade
+            // db.Clientes.Update(cliente);
+
+            //para resolver isso, apenas chamando o SaveChanges sem o update, somente o campo nome sera atualizado
+
+            //outra forma para atualizar dados é a partir do rastreamento de forma explicita
+            // db.Entry(cliente).State = EntityState.Modified;
+
+
+            //---------- CENARIO DESCONECTADO -------------
+            //um cenario desconectado acontece quando os dados ainda não estao instanciados
+            // como por exemplo numa aplicacao FrontEnd que envia dados de cadastro de clientes para uma API
+            // e a API que tem acesso ao banco de dados, e ela trata os dados para serem atualizados
+            
+            //é possivel ao invez de consultar a base de dados para obter o ID do cliente, ter uma instancia de um cliente e para ele ja ser informado o ID dele
+            var clienteJaInstanciado = new Cliente{
+                Id = 1,
+            };
+            var clienteDesconectadoRastreado = new
+            {
+                Nome = "Cliente Desconectado Rastreado",
+                Telefone = "4567891234"
+            };
+
+            //fazer com que o objeto comece a ser rastreado, pois ela n é provinda de uma consulta no BD
+            db.Attach(clienteJaInstanciado);
+            db.Entry(clienteJaInstanciado).CurrentValues.SetValues(clienteDesconectadoRastreado);
+
+
+            //---------- FIM CENARIO DESCONECTADO -------------
+
+            var clienteDesconectado = new
+            {
+                Nome = "Cliente Desconectado",
+                Telefone = "4567891234"
+            };
+
+            //atualizando o cliente com os valores
+            db.Entry(cliente).CurrentValues.SetValues(clienteDesconectado);
+
+            db.SaveChanges();
+
         }
     }
 }
