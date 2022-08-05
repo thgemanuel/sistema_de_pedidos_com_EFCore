@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using SistemaPedidoEFCore.Data.Configurations;
 using SistemaPedidoEFCore.Domain;
 
@@ -7,6 +8,8 @@ namespace SistemaPedidoEFCore.Data
 {
     public class ApplicationContext : DbContext
     {
+        //criando instancia do logger para escrever log da aplicacao
+        public static readonly ILoggerFactory _logger = LoggerFactory.Create(p => p.AddConsole());
         //é possivel criar o modelo de dados a partir do DbSet<> quanto
         //  sobreescrevendo a funcao OnModelCreating
         public DbSet<Pedido> Pedidos { get; set; }
@@ -14,7 +17,10 @@ namespace SistemaPedidoEFCore.Data
         public DbSet<Cliente> Clientes { get; set; }
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseSqlServer("Data source=(localdb)\\mssqllocaldb;Initial Catalog=SistemaDePedidosEFCoreConsole;Integrated Security=true");
+            optionsBuilder
+                .UseLoggerFactory(_logger)
+                .EnableSensitiveDataLogging() // exibe os valores de cada parametro no console
+                .UseSqlServer("Data source=(localdb)\\mssqllocaldb;Initial Catalog=SistemaDePedidosEFCoreConsole;Integrated Security=true");
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

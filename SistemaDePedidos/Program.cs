@@ -17,11 +17,69 @@ namespace SistemaDePedidosEFCoreConsole
             // var existe = db.Database.GetPendingMigrations().Any();
             // if (existe)
             // {
-                //regra de negocio para reverter o problema de migracoes pendentes, como por exemplo fazer uma notificacao ou finalizando a aplicacao 
+            //regra de negocio para reverter o problema de migracoes pendentes, como por exemplo fazer uma notificacao ou finalizando a aplicacao 
             // }
 
             //chama funcao para inserir dados
-            InserirDados();
+            //InserirDados();
+
+            //chama funcao para inserir dados em massa
+            InserirDadosEmMassa();
+        }
+
+        //inserindo dados em massa
+        private static void InserirDadosEmMassa()
+        {
+            var produto = new Produto
+            {
+                Descricao = "Produto Teste Massa",
+                CodigoBarras = "1234567456234",
+                Valor = 20m,
+                TipoProduto = SistemaPedidoEFCore.ValueObjects.TipoProduto.Embalagem,
+                Ativo = true
+            };
+
+            var cliente = new Cliente
+            {
+                Nome = "Cliente Teste",
+                CEP = "99999000",
+                Cidade = "Almenara",
+                Estado = "MG",
+                Telefone = "99988877745",
+            };
+
+            var listaCliente = new[]{
+                new Cliente
+                {
+                    Nome = "Cliente Teste Lista 1",
+                    CEP = "99999000",
+                    Cidade = "Almenara",
+                    Estado = "MG",
+                    Telefone = "99988877745",
+                },
+                new Cliente
+                {
+                    Nome = "Cliente Teste Lista 2",
+                    CEP = "99999000",
+                    Cidade = "Almenara",
+                    Estado = "MG",
+                    Telefone = "99988877746",
+                },
+            };
+
+            using var db = new SistemaPedidoEFCore.Data.ApplicationContext();
+            //adicionando instancias de diferentes tipos
+            //db.AddRange(produto, cliente);
+
+            //adicionando uma lista de instancias
+            // db.AddRange(listaCliente);
+
+            //tambem se pode adicionar de outra forma
+            db.Set<Cliente>().AddRange(listaCliente);
+
+            var registros = db.SaveChanges();
+
+            Console.WriteLine($"Total registro(s): {registros}");
         }
 
         //inserindo um registro na base de dados
@@ -37,7 +95,7 @@ namespace SistemaDePedidosEFCoreConsole
             };
 
             using var db = new SistemaPedidoEFCore.Data.ApplicationContext();
-            
+
             //caso todas as opcoes estejam descomentadas, mesmo todas executando somente um registro sera inserido
             // pois o que é monitorado pelo EF COre é a instancia do objeto, assim qualquer metodo chamado nao afertara a instancia do registro
             // o EFCore rastreia a instancia especifica
