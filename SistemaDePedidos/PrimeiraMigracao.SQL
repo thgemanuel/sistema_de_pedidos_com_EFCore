@@ -1,4 +1,9 @@
-﻿IF OBJECT_ID(N'[__EFMigrationsHistory]') IS NULL
+﻿/*
+arquivo gerado com comando:
+dotnet ef migrations script -p .\SistemaDePedidosEFCoreConsole.csproj -o PrimeiraMigracao.SQL
+*/
+
+IF OBJECT_ID(N'[__EFMigrationsHistory]') IS NULL
 BEGIN
     CREATE TABLE [__EFMigrationsHistory] (
         [MigrationId] nvarchar(150) NOT NULL,
