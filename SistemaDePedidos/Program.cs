@@ -36,7 +36,10 @@ namespace SistemaDePedidosEFCoreConsole
             // ConsultarPedidoCarregamentoAdiantado();
 
             //metodo para atualizar dados
-            AtualizarDados();
+            // AtualizarDados();
+
+            //metodo para remover registro
+            RemoverRegistro();
         }
 
         //inserindo dados em massa
@@ -258,6 +261,40 @@ namespace SistemaDePedidosEFCoreConsole
 
             db.SaveChanges();
 
+        }
+
+        //removendo registros
+        private static void RemoverRegistro()
+        {
+            using var db = new SistemaPedidoEFCore.Data.ApplicationContext();
+            
+            //buscando na base de dados a entidade com chave primaria de valor 2
+            var cliente = db.Clientes.Find(2);
+
+            //primeira possibilidade de remover uma instancia
+            // db.Clientes.Remove(cliente);
+
+            //a segunda possibilidade 
+            // db.Remove(cliente);
+
+            //terceira possibilidade primeiro seleciona qual objeto se quer manipular
+            // db.Entry(cliente).State = EntityState.Deleted;
+
+            //------------ CENARIO DESCONECTADO ---------------
+            //com essa opcao o EFCore so tem uma iteracao com a BD, que é apenas a de remover o registro
+            // no cenario conectado, ele faz primeira uma iteracao para localizar a entidade na base de dados
+            // para depois fazer outra iteracao para remover esse registro
+
+            //da forma desconectada, é evitado que o comando de remover um registro seja realizado para remover um registro que nao esteja na BD
+            var clienteDesconectado = new Cliente
+            {
+                Id = 3,
+            };
+            db.Clientes.Remove(clienteDesconectado);
+            //---------- FIM CENARIO DESCONECTADO -------------
+            
+
+            db.SaveChanges();
         }
     }
 }
