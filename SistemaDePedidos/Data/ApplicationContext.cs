@@ -1,3 +1,4 @@
+using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using SistemaPedidoEFCore.Data.Configurations;
@@ -26,7 +27,7 @@ namespace SistemaPedidoEFCore.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             //informar um modelo de dados que foi configurado em classe separada
-            
+
             //primeira forma manual
             // modelBuilder.ApplyConfiguration(new ClienteConfiguration());
             // modelBuilder.ApplyConfiguration(new ProdutoConfiguration());
@@ -36,6 +37,29 @@ namespace SistemaPedidoEFCore.Data
             //segunda forma automatica
             //aqui é passado o assembly do projeto para importar todas as configuracoes
             modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationContext).Assembly);
+            MapearPropriedadeEsquecida(modelBuilder);
+        }
+
+        //mapeando propriedades que foram esquecidas de configurar no modelo de dados
+        protected void MapearPropriedadeEsquecida(ModelBuilder modelBuilder)
+        {
+            foreach (var entity in modelBuilder.Model.GetEntityTypes())
+            {
+                var properties = entity.GetProperties().Where(p => p.ClrType == typeof(string));
+
+                foreach (var property in properties)
+                {
+                    //regra para verificar se propriedade ja foi configurada ou nao
+                    //verificando se o tipo da coluna esta vazia, ou seja, se foi configurada ou nao, e tambem se nao foi definido um tamnho maximo para essa propriedade
+                    if (string.IsNullOrEmpty(property.GetColumnType())
+                        && !property.GetMaxLength().HasValue)
+                    {
+                        // property.SetMaxLength(100);
+                        //toda vez que encontrar uma propriedade que nao esta configurada do tipo string, ira criar essa propriedade na base de dados por padrao com VARCHAR(100)
+                        property.SetColumnType("VARCHAR(100)");
+                    }
+                }
+            }
         }
     }
 }
